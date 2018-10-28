@@ -17,7 +17,6 @@ app = Flask(__name__)
 def hello_world():
     return 'Hola mundo'
 
-
 @app.route('/usuario' , methods=['GET'])
 def Usuario():
     if request.method=='GET':
@@ -51,6 +50,7 @@ def Usuario():
         #ceo.nombre = "Andres"
         #ceo.correo = "andresbbx@gmail.com"
         #Model.get_by_id
+        """
         ceo = Ceo.query(Ceo.correo=="andresbbx@gmail.com").fetch()[0]
         
         ceo.topicos.append(Topico.query(Topico.nombre=="justicia").fetch()[0].key)
@@ -60,6 +60,9 @@ def Usuario():
         usuarios.append(usuario)
         
         data = Serializador.serializador(usuarios)
+        
+        """
+        data = []
         respuesta = Response(response=data,
                             status=200,
                             mimetype='application/json'
@@ -97,6 +100,33 @@ def topicos():
         topico.put()
         return Response(status=200)
 
+    
+
+@app.route('/topico/<int:id>', methods=['GET','PUT'])
+def modificarTopico(id):
+    if request.method=='PUT':
+        datos = request.get_json(force=True)
+        
+        topico = Topico.get_by_id(int(id))
+        
+        
+        topico.nombre = datos['nombre']
+        topico.descripcion = datos['descripcion']
+        topico.url = datos['url']
+        
+        topico.put()
+        topicos = Topico.query().fetch()
+        serializados = Serializador.serializador(topicos)
+        
+        respuesta = Response(response=serializados,
+                             status=200,
+                             mimetype='application/json'
+                             )
+        return respuesta
+
+    pass
+
+
 
 @app.route('/informacion/',methods=['GET'])
 def informacion():
@@ -109,7 +139,7 @@ def informacion():
             for url in t.get().url:
                 
                 data = json.loads(urllib.urlopen(url_api+url).read())
-                print(data)
+               
                 lista.append(data)
         serializer = json.dumps(lista, indent=1,  ensure_ascii=False)
         
